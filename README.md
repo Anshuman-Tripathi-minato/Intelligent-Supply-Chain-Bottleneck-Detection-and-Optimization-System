@@ -61,9 +61,9 @@ source venv/bin/activate
 ### 3️⃣ Install Dependencies
 
 Create a `requirements.txt`:
-pandas
-numpy
-plotly
+- pandas
+- numpy
+- plotly
 
 Install:
 pip install -r requirements.txt
