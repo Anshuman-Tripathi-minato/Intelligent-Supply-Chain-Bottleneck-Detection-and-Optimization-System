@@ -117,6 +117,14 @@ Store_ID, Store
 ---
 
 ## 🖼  Screenshots 
+### 📊 Sankey Flow Diagram
+![Sankey Flow](sankey.png)
+
+### 📈  Bottleneck & KPI Section 🔥
+![Bottleneck & KPIs](bottleneck&KPI.png)
+
+### 📊 Table
+![Table](table.png)
 
 
 ---
