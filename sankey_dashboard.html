@@ -1,0 +1,770 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Supply Chain Bottleneck Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .header {
+            background: linear-gradient(90deg, #0d6efd, #6610f2);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+        .card {
+            background-color: white;
+            padding: 16px 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 14px;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .chart-container {
+            width: 100%;
+            height: 65vh;
+            max-height: 640px;
+            min-height: 360px;
+            margin-bottom: 4px;
+            overflow: visible;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .kpi {
+            padding: 10px 12px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .kpi-label {
+            font-size: 11px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+        .kpi-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0d6efd;
+        }
+        .kpi-sub {
+            font-size: 11px;
+            color: #6c757d;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.3);
+        }
+        .legend-title {
+            font-weight: 600;
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-label {
+            font-size: 11px;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
+        .filter-value {
+            font-weight: 600;
+            color: #0d6efd;
+            margin-left: 6px;
+        }
+        .slider {
+            width: 100%;
+        }
+        select, input[type="search"] {
+            padding: 5px 8px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            font-size: 12px;
+        }
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            font-size: 12px;
+        }
+        .toggle-row label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .pill-low { background-color: #d1e7dd; color: #0f5132; }
+        .pill-medium { background-color: #fff3cd; color: #664d03; }
+        .pill-high { background-color: #f8d7da; color: #842029; }
+        .bottleneck-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .bottleneck-table th,
+        .bottleneck-table td {
+            border: 1px solid #dee2e6;
+            padding: 6px 8px;
+        }
+        .bottleneck-table th {
+            background: linear-gradient(90deg, #003b73, #0059b3);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 12px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .bottleneck-table td {
+            text-align: center;
+        }
+        .bottleneck-table td:first-child,
+        .bottleneck-table th:first-child {
+            text-align: left;
+        }
+        .bottleneck-row-strong {
+            background-color: #fff5f5;
+        }
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            align-items: stretch;
+        }
+        .AT {
+            width: 100%;
+            margin: 24px auto 0 auto;
+            padding: 0 10px 16px 10px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 11px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+        }
+        th {
+            background-color: #000;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Responsive layout for smaller screens */
+        @media (max-width: 1024px) {
+            .chart-container {
+                height: 60vh;
+                max-height: 520px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+            .chart-container {
+                height: 55vh;
+                max-height: 480px;
+                min-height: 320px;
+            }
+            .kpi-grid,
+            .kpi-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <div class="header-title">Intelligent Supply Chain Bottleneck Dashboard</div>
+                <div class="header-subtitle">
+                    Descriptive · Diagnostic · Predictive · Prescriptive analytics across full vendor → store network
+                </div>
+            </div>
+            <div>
+                <span id="healthPill" class="pill pill-low">
+                    Health: <span id="healthScoreText">–</span>/100
+                </span>
+            </div>
+        </div>
+
+        <div class="layout">
+            <!-- Full-width: Sankey + filters -->
+            <div class="card">
+                <div class="card-title">Flow Visualization & Controls</div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <div class="filter-label">
+                            <span>Filter by Vendor</span>
+                            <span class="filter-value" id="selectedVendorText">All</span>
+                        </div>
+                        <select id="vendorFilter">
+                            <option value="ALL">All Vendors</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">
+                            <span>Search Node / Facility</span>
+                        </div>
+                        <input type="search" id="nodeSearch" placeholder="e.g. Vendor1, c3, 2, Store4">
+                    </div>
+                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <div class="filter-label">
+                            <span>Min Link Flow</span>
+                            <span class="filter-value" id="linkValueDisplay">>&nbsp;0</span>
+                        </div>
+                        <input type="range" id="linkValueSlider" min="0" max="1000" value="0" class="slider">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">
+                            <span>Min LOS (Days)</span>
+                            <span class="filter-value" id="losValueDisplay">>&nbsp;0</span>
+                        </div>
+                        <input type="range" id="losSlider" min="0" max="5" value="0" step="0.5" class="slider">
+                    </div>
+                </div>
+                <div class="toggle-row">
+                    <label>
+                        <input type="checkbox" id="bottleneckToggle">
+                        Show only bottleneck links (Top 10)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="highlightPathToggle">
+                        Highlight vendor → store critical path
+                    </label>
+                </div>
+                <div class="chart-container" id="sankey-chart"></div>
+                <div class="legend">
+                    <span class="legend-title">Node Colors:</span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:#1f77b4;"></span> Trader
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:#ff7f0e;"></span> Collection Point
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:#2ca02c;"></span> Cargo Hub
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:#d62728;"></span> Warehouse
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:#9467bd;"></span> Distribution Center
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:#8c564b;"></span> Store
+                    </span>
+                </div>
+                <div class="legend" style="margin-top:6px;">
+                    <span class="legend-title">Link LOS Intensity:</span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:rgba(0, 180, 0, 0.5);"></span> Low LOS
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:rgba(200, 120, 0, 0.7);"></span> Medium LOS
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color:rgba(220, 0, 0, 0.8);"></span> High LOS
+                    </span>
+                </div>
+            </div>
+
+            <!-- Second row: KPIs, Bottlenecks, Predictive in three columns -->
+            <div class="kpi-row">
+                <div class="card">
+                    <div class="card-title">Scorecard KPIs</div>
+                    <div class="kpi-grid">
+                        <div class="kpi">
+                            <div class="kpi-label">End-to-End LOS (Avg Days)</div>
+                            <div class="kpi-value" id="kpiEndToEndLos">–</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Network Throughput</div>
+                            <div class="kpi-value" id="kpiThroughput">–</div>
+                            <div class="kpi-sub" id="kpiThroughputDetail"></div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Efficiency Score</div>
+                            <div class="kpi-value" id="kpiEfficiency">–</div>
+                            <div class="kpi-sub">Higher is better (0–100)</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; font-size:11px;">
+                        <strong>Vendor Performance (Avg LOS):</strong>
+                        <span id="vendorPerformanceText"></span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Top Bottlenecks & Critical Paths</div>
+                    <table class="bottleneck-table" id="bottleneckTable">
+                        <thead>
+                            <tr>
+                                <th>Stage</th>
+                                <th>From → To</th>
+                                <th>Flow</th>
+                                <th>LOS</th>
+                                <th>Bottleneck Score</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div style="margin-top:8px; font-size:11px;" id="criticalPathSummary"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Predictive & Optimization Insights (30 Days)</div>
+                    <div style="font-size:11px; margin-bottom:6px;">
+                        <strong>Expected LOS:</strong>
+                        <span id="predictedLosText">–</span>
+                        <span id="predictedLosPill" class="pill pill-low" style="margin-left:6px;">–</span>
+                    </div>
+                    <div style="font-size:11px; margin-bottom:4px;">
+                        <strong>Vendor with Future Risk:</strong>
+                        <span id="futureRiskVendor">–</span>
+                    </div>
+                    <div style="font-size:11px;">
+                        <strong>Alternate Route Suggestions:</strong>
+                        <ul id="alternateRouteList" style="padding-left:16px; margin:4px 0;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="AT">
+        <h3>Supply Chain Dataset</h3>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Trader_ID</th>
+                    <th>Trader</th>
+                    <th>Int1</th>
+                    <th>LOS1</th>
+                    <th>Collection Point_ID</th>
+                    <th>Collection Point</th>
+                    <th>Int2</th>
+                    <th>LOS2</th>
+                    <th>Cargo Hub_ID</th>
+                    <th>Cargo Hub</th>
+                    <th>Int3</th>
+                    <th>LOS3</th>
+                    <th>WareHouse_ID</th>
+                    <th>WareHouse</th>
+                    <th>Int4</th>
+                    <th>LOS4</th>
+                    <th>Distribution Center_ID</th>
+                    <th>Distribution Center</th>
+                    <th>Int5</th>
+                    <th>LOS5</th>
+                    <th>Store_ID</th>
+                    <th>Store</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Table data will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script>
+        // Insert the Plotly figure and analytics
+        const sankeyData = {"data": [{"link": {"color": ["rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(0, 180, 0, 0.50)", "rgba(200, 120, 0, 0.70)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(220, 0, 0, 0.80)", "rgba(200, 120, 0, 0.70)"], "hovertemplate": "%{label}<br>From: %{source.label}<br>To: %{target.label}<extra></extra>", "label": ["Flow: 410.00, LOS: 3.00", "Flow: 371.00, LOS: 2.00", "Flow: 669.00, LOS: 3.00", "Flow: 471.00, LOS: 3.00", "Flow: 304.00, LOS: 2.00", "Flow: 327.00, LOS: 2.00", "Flow: 148.00, LOS: 1.00", "Flow: 343.00, LOS: 2.00", "Flow: 328.00, LOS: 2.00", "Flow: 93.00, LOS: 1.00", "Flow: 832.00, LOS: 4.00", "Flow: 617.00, LOS: 3.00", "Flow: 351.00, LOS: 2.00", "Flow: 225.00, LOS: 2.00", "Flow: 683.00, LOS: 4.00", "Flow: 410.00, LOS: 2.00", "Flow: 502.00, LOS: 3.00", "Flow: 292.00, LOS: 2.00", "Flow: 401.00, LOS: 3.00", "Flow: 349.00, LOS: 2.00", "Flow: 654.00, LOS: 3.00", "Flow: 55.00, LOS: 1.00", "Flow: 383.00, LOS: 2.00", "Flow: 135.00, LOS: 1.00", "Flow: 170.00, LOS: 1.00", "Flow: 599.00, LOS: 3.00", "Flow: 129.00, LOS: 1.00", "Flow: 371.00, LOS: 2.00", "Flow: 646.00, LOS: 4.00", "Flow: 50.00, LOS: 1.00", "Flow: 754.00, LOS: 4.00", "Flow: 98.00, LOS: 1.00", "Flow: 189.00, LOS: 1.00", "Flow: 165.00, LOS: 1.00", "Flow: 433.00, LOS: 2.00", "Flow: 99.00, LOS: 1.00", "Flow: 404.00, LOS: 2.00", "Flow: 408.00, LOS: 2.00", "Flow: 331.00, LOS: 2.00", "Flow: 148.00, LOS: 1.00", "Flow: 799.00, LOS: 4.00", "Flow: 289.00, LOS: 2.00", "Flow: 146.00, LOS: 1.00", "Flow: 457.00, LOS: 3.00", "Flow: 76.00, LOS: 1.00", "Flow: 459.00, LOS: 3.00", "Flow: 592.00, LOS: 3.00", "Flow: 72.00, LOS: 1.00", "Flow: 561.00, LOS: 3.00", "Flow: 392.00, LOS: 2.00", "Flow: 88.00, LOS: 1.00", "Flow: 684.00, LOS: 3.00", "Flow: 404.00, LOS: 2.00", "Flow: 824.00, LOS: 4.00", "Flow: 392.00, LOS: 2.00", "Flow: 884.00, LOS: 4.00", "Flow: 93.00, LOS: 1.00", "Flow: 272.00, LOS: 2.00", "Flow: 478.00, LOS: 3.00", "Flow: 384.00, LOS: 2.00", "Flow: 133.00, LOS: 1.00", "Flow: 89.00, LOS: 1.00", "Flow: 50.00, LOS: 1.00", "Flow: 825.00, LOS: 4.00", "Flow: 783.00, LOS: 4.00", "Flow: 621.00, LOS: 3.00", "Flow: 153.00, LOS: 1.00", "Flow: 738.00, LOS: 4.00", "Flow: 499.00, LOS: 3.00", "Flow: 50.00, LOS: 1.00", "Flow: 644.00, LOS: 3.00", "Flow: 671.00, LOS: 4.00", "Flow: 527.00, LOS: 3.00", "Flow: 805.00, LOS: 4.00", "Flow: 96.00, LOS: 1.00", "Flow: 827.00, LOS: 4.00", "Flow: 50.00, LOS: 1.00", "Flow: 576.00, LOS: 3.00", "Flow: 60.00, LOS: 1.00", "Flow: 719.00, LOS: 4.00", "Flow: 399.00, LOS: 2.00", "Flow: 322.00, LOS: 2.00", "Flow: 141.00, LOS: 1.00", "Flow: 689.00, LOS: 3.00", "Flow: 213.00, LOS: 2.00", "Flow: 678.00, LOS: 3.00", "Flow: 50.00, LOS: 1.00", "Flow: 686.00, LOS: 3.00", "Flow: 98.00, LOS: 1.00", "Flow: 166.00, LOS: 1.00", "Flow: 51.00, LOS: 1.00", "Flow: 438.00, LOS: 3.00", "Flow: 476.00, LOS: 2.00", "Flow: 525.00, LOS: 3.00", "Flow: 413.00, LOS: 2.00", "Flow: 637.00, LOS: 3.00", "Flow: 751.00, LOS: 4.00", "Flow: 367.00, LOS: 2.00", "Flow: 55.00, LOS: 1.00", "Flow: 233.00, LOS: 1.00", "Flow: 340.00, LOS: 2.00", "Flow: 704.00, LOS: 3.00", "Flow: 219.00, LOS: 2.00", "Flow: 686.00, LOS: 3.00", "Flow: 422.00, LOS: 2.00", "Flow: 615.00, LOS: 3.00", "Flow: 326.00, LOS: 2.00", "Flow: 233.00, LOS: 2.00", "Flow: 50.00, LOS: 1.00", "Flow: 515.00, LOS: 3.00", "Flow: 137.00, LOS: 1.00", "Flow: 375.00, LOS: 2.00", "Flow: 851.00, LOS: 4.00", "Flow: 476.00, LOS: 3.00", "Flow: 255.00, LOS: 2.00", "Flow: 311.00, LOS: 2.00", "Flow: 234.00, LOS: 2.00", "Flow: 145.00, LOS: 1.00", "Flow: 423.00, LOS: 2.00", "Flow: 379.00, LOS: 2.00", "Flow: 519.00, LOS: 3.00", "Flow: 698.00, LOS: 4.00", "Flow: 515.00, LOS: 3.00", "Flow: 425.00, LOS: 3.00", "Flow: 156.00, LOS: 1.00", "Flow: 673.00, LOS: 3.00", "Flow: 50.00, LOS: 1.00", "Flow: 246.00, LOS: 2.00", "Flow: 323.00, LOS: 2.00", "Flow: 523.00, LOS: 3.00", "Flow: 771.00, LOS: 4.00", "Flow: 270.00, LOS: 2.00", "Flow: 592.00, LOS: 3.00", "Flow: 114.00, LOS: 1.00", "Flow: 82.00, LOS: 1.00", "Flow: 95.00, LOS: 1.00", "Flow: 254.00, LOS: 2.00", "Flow: 253.00, LOS: 2.00", "Flow: 835.00, LOS: 4.00", "Flow: 187.00, LOS: 2.00", "Flow: 478.00, LOS: 3.00", "Flow: 751.00, LOS: 4.00", "Flow: 164.00, LOS: 1.00", "Flow: 606.00, LOS: 3.00", "Flow: 466.00, LOS: 3.00", "Flow: 656.00, LOS: 3.00", "Flow: 672.00, LOS: 4.00", "Flow: 576.00, LOS: 3.00", "Flow: 368.00, LOS: 2.00", "Flow: 364.00, LOS: 2.00", "Flow: 165.00, LOS: 1.00", "Flow: 116.00, LOS: 1.00", "Flow: 394.00, LOS: 2.00", "Flow: 173.00, LOS: 2.00", "Flow: 754.00, LOS: 4.00", "Flow: 608.00, LOS: 3.00", "Flow: 739.00, LOS: 4.00", "Flow: 264.00, LOS: 2.00", "Flow: 915.00, LOS: 4.00", "Flow: 334.00, LOS: 2.00", "Flow: 489.00, LOS: 3.00", "Flow: 50.00, LOS: 1.00", "Flow: 174.00, LOS: 2.00", "Flow: 69.00, LOS: 1.00", "Flow: 834.00, LOS: 4.00", "Flow: 702.00, LOS: 4.00", "Flow: 693.00, LOS: 4.00", "Flow: 692.00, LOS: 3.00", "Flow: 791.00, LOS: 4.00", "Flow: 430.00, LOS: 3.00", "Flow: 493.00, LOS: 3.00", "Flow: 196.00, LOS: 1.00", "Flow: 364.00, LOS: 2.00", "Flow: 736.00, LOS: 4.00", "Flow: 810.00, LOS: 4.00", "Flow: 325.00, LOS: 2.00", "Flow: 139.00, LOS: 1.00", "Flow: 795.00, LOS: 4.00", "Flow: 281.00, LOS: 2.00", "Flow: 412.00, LOS: 2.00", "Flow: 541.00, LOS: 3.00", "Flow: 94.00, LOS: 1.00", "Flow: 681.00, LOS: 4.00", "Flow: 410.00, LOS: 2.00", "Flow: 264.00, LOS: 2.00", "Flow: 571.00, LOS: 3.00", "Flow: 555.00, LOS: 3.00", "Flow: 664.00, LOS: 3.00", "Flow: 184.00, LOS: 1.00", "Flow: 340.00, LOS: 2.00", "Flow: 678.00, LOS: 4.00", "Flow: 401.00, LOS: 2.00", "Flow: 138.00, LOS: 1.00", "Flow: 479.00, LOS: 3.00", "Flow: 759.00, LOS: 4.00", "Flow: 291.00, LOS: 2.00", "Flow: 386.00, LOS: 2.00", "Flow: 594.00, LOS: 3.00", "Flow: 106.00, LOS: 1.00", "Flow: 373.00, LOS: 2.00", "Flow: 781.00, LOS: 4.00", "Flow: 847.00, LOS: 4.00", "Flow: 390.00, LOS: 2.00", "Flow: 658.00, LOS: 3.00", "Flow: 758.00, LOS: 4.00", "Flow: 140.00, LOS: 1.00", "Flow: 697.00, LOS: 3.00", "Flow: 396.00, LOS: 2.00", "Flow: 802.00, LOS: 4.00", "Flow: 780.00, LOS: 4.00", "Flow: 246.00, LOS: 2.00", "Flow: 555.00, LOS: 3.00", "Flow: 566.00, LOS: 3.00", "Flow: 210.00, LOS: 1.00", "Flow: 698.00, LOS: 3.00", "Flow: 751.00, LOS: 4.00", "Flow: 805.00, LOS: 4.00", "Flow: 561.00, LOS: 3.00", "Flow: 436.00, LOS: 2.00", "Flow: 450.00, LOS: 3.00", "Flow: 149.00, LOS: 1.00", "Flow: 423.00, LOS: 2.00", "Flow: 746.00, LOS: 4.00", "Flow: 877.00, LOS: 4.00", "Flow: 113.00, LOS: 1.00", "Flow: 585.00, LOS: 3.00", "Flow: 646.00, LOS: 3.00", "Flow: 372.00, LOS: 2.00", "Flow: 222.00, LOS: 1.00", "Flow: 317.00, LOS: 2.00", "Flow: 802.00, LOS: 4.00", "Flow: 342.00, LOS: 2.00", "Flow: 808.00, LOS: 4.00", "Flow: 197.00, LOS: 2.00", "Flow: 204.00, LOS: 2.00", "Flow: 592.00, LOS: 3.00", "Flow: 398.00, LOS: 2.00", "Flow: 159.00, LOS: 1.00", "Flow: 396.00, LOS: 2.00", "Flow: 608.00, LOS: 3.00", "Flow: 822.00, LOS: 4.00", "Flow: 731.00, LOS: 4.00", "Flow: 804.00, LOS: 4.00", "Flow: 146.00, LOS: 1.00", "Flow: 392.00, LOS: 2.00", "Flow: 605.00, LOS: 3.00", "Flow: 669.00, LOS: 3.00", "Flow: 891.00, LOS: 4.00", "Flow: 485.00, LOS: 3.00", "Flow: 211.00, LOS: 2.00"], "source": [0, 4, 9, 13, 17, 0, 5, 9, 13, 18, 0, 6, 10, 14, 19, 1, 6, 9, 14, 18, 0, 6, 11, 14, 19, 0, 6, 9, 13, 19, 0, 6, 12, 13, 17, 0, 4, 12, 15, 18, 2, 7, 11, 15, 18, 3, 4, 12, 13, 17, 2, 7, 9, 13, 19, 0, 6, 10, 13, 18, 0, 4, 11, 16, 18, 2, 5, 10, 13, 18, 0, 6, 10, 14, 17, 1, 8, 9, 14, 17, 0, 6, 10, 16, 17, 1, 4, 10, 14, 17, 3, 4, 10, 13, 20, 3, 4, 11, 14, 20, 2, 6, 11, 15, 18, 2, 7, 11, 14, 19, 0, 8, 11, 15, 18, 0, 5, 11, 16, 18, 1, 4, 10, 13, 20, 1, 6, 12, 15, 18, 3, 6, 12, 14, 18, 3, 4, 12, 15, 20, 2, 6, 10, 13, 18, 0, 7, 10, 16, 20, 3, 8, 9, 16, 20, 1, 4, 11, 15, 18, 3, 6, 12, 13, 19, 0, 4, 12, 16, 19, 2, 7, 11, 14, 19, 3, 5, 9, 16, 17, 3, 6, 10, 16, 17, 1, 7, 12, 15, 18, 1, 7, 12, 14, 18, 0, 7, 12, 13, 17, 0, 8, 9, 14, 17, 1, 6, 12, 16, 18, 1, 8, 9, 15, 20, 3, 6, 11, 15, 19, 1, 5, 12, 16, 17, 0, 8, 9, 13, 20, 3, 6, 12, 16, 18, 2, 4, 12, 15, 18, 1, 5, 11, 14, 19, 0, 6, 9, 13, 17], "target": [4, 9, 13, 17, 21, 5, 9, 13, 18, 22, 6, 10, 14, 19, 21, 6, 9, 14, 18, 23, 6, 11, 14, 19, 24, 6, 9, 13, 19, 24, 6, 12, 13, 17, 25, 4, 12, 15, 18, 22, 7, 11, 15, 18, 26, 4, 12, 13, 17, 23, 7, 9, 13, 19, 27, 6, 10, 13, 18, 26, 4, 11, 16, 18, 24, 5, 10, 13, 18, 23, 6, 10, 14, 17, 23, 8, 9, 14, 17, 28, 6, 10, 16, 17, 23, 4, 10, 14, 17, 23, 4, 10, 13, 20, 23, 4, 11, 14, 20, 28, 6, 11, 15, 18, 28, 7, 11, 14, 19, 21, 8, 11, 15, 18, 23, 5, 11, 16, 18, 21, 4, 10, 13, 20, 22, 6, 12, 15, 18, 23, 6, 12, 14, 18, 26, 4, 12, 15, 20, 21, 6, 10, 13, 18, 24, 7, 10, 16, 20, 27, 8, 9, 16, 20, 28, 4, 11, 15, 18, 27, 6, 12, 13, 19, 28, 4, 12, 16, 19, 25, 7, 11, 14, 19, 23, 5, 9, 16, 17, 26, 6, 10, 16, 17, 23, 7, 12, 15, 18, 27, 7, 12, 14, 18, 21, 7, 12, 13, 17, 27, 8, 9, 14, 17, 28, 6, 12, 16, 18, 24, 8, 9, 15, 20, 21, 6, 11, 15, 19, 27, 5, 12, 16, 17, 26, 8, 9, 13, 20, 25, 6, 12, 16, 18, 28, 4, 12, 15, 18, 23, 5, 11, 14, 19, 27, 6, 9, 13, 17, 26], "value": [410, 371, 669, 471, 304, 327, 148, 343, 328, 93, 832, 617, 351, 225, 683, 410, 502, 292, 401, 349, 654, 55, 383, 135, 170, 599, 129, 371, 646, 50, 754, 98, 189, 165, 433, 99, 404, 408, 331, 148, 799, 289, 146, 457, 76, 459, 592, 72, 561, 392, 88, 684, 404, 824, 392, 884, 93, 272, 478, 384, 133, 89, 50, 825, 783, 621, 153, 738, 499, 50, 644, 671, 527, 805, 96, 827, 50, 576, 60, 719, 399, 322, 141, 689, 213, 678, 50, 686, 98, 166, 51, 438, 476, 525, 413, 637, 751, 367, 55, 233, 340, 704, 219, 686, 422, 615, 326, 233, 50, 515, 137, 375, 851, 476, 255, 311, 234, 145, 423, 379, 519, 698, 515, 425, 156, 673, 50, 246, 323, 523, 771, 270, 592, 114, 82, 95, 254, 253, 835, 187, 478, 751, 164, 606, 466, 656, 672, 576, 368, 364, 165, 116, 394, 173, 754, 608, 739, 264, 915, 334, 489, 50, 174, 69, 834, 702, 693, 692, 791, 430, 493, 196, 364, 736, 810, 325, 139, 795, 281, 412, 541, 94, 681, 410, 264, 571, 555, 664, 184, 340, 678, 401, 138, 479, 759, 291, 386, 594, 106, 373, 781, 847, 390, 658, 758, 140, 697, 396, 802, 780, 246, 555, 566, 210, 698, 751, 805, 561, 436, 450, 149, 423, 746, 877, 113, 585, 646, 372, 222, 317, 802, 342, 808, 197, 204, 592, 398, 159, 396, 608, 822, 731, 804, 146, 392, 605, 669, 891, 485, 211]}, "node": {"color": ["#1f77b4", "#1f77b4", "#1f77b4", "#1f77b4", "#ff7f0e", "#ff7f0e", "#ff7f0e", "#ff7f0e", "#ff7f0e", "#2ca02c", "#2ca02c", "#2ca02c", "#2ca02c", "#d62728", "#d62728", "#d62728", "#d62728", "#9467bd", "#9467bd", "#9467bd", "#9467bd", "#8c564b", "#8c564b", "#8c564b", "#8c564b", "#8c564b", "#8c564b", "#8c564b", "#8c564b"], "hovertemplate": "%{label}<br>Total Flow: %{value}<extra></extra>", "label": ["Vendor2", "Vendor4", "Vendor3", "Vendor1", "c1", "c5", "c2", "c4", "c3", "1", "3", "4", "2", "1", "4", "2", "3", "3", "2", "4", "1", "1", "7", "4", "3", "8", "6", "2", "5"], "line": {"color": "black", "width": 0.5}, "pad": 15, "thickness": 20, "x": [0.02, 0.02, 0.02, 0.02, 0.2, 0.2, 0.2, 0.2, 0.2, 0.46, 0.46, 0.46, 0.46, 0.68, 0.68, 0.68, 0.68, 0.9, 0.9, 0.9, 0.9, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98], "y": [0.35, 0.85, 0.6, 0.1, 0.1, 0.9, 0.3, 0.7, 0.5, 0.1, 0.6, 0.85, 0.35, 0.1, 0.85, 0.35, 0.6, 0.6, 0.35, 0.85, 0.1, 0.1, 0.5, 0.85, 0.6, 0.5, 0.5, 0.35, 0.5]}, "type": "sankey"}], "layout": {"template": {"data": {"histogram2dcontour": [{"type": "histogram2dcontour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "choropleth": [{"type": "choropleth", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "histogram2d": [{"type": "histogram2d", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "heatmap": [{"type": "heatmap", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "contourcarpet": [{"type": "contourcarpet", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "contour": [{"type": "contour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "surface": [{"type": "surface", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "mesh3d": [{"type": "mesh3d", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "scatter": [{"fillpattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}, "type": "scatter"}], "parcoords": [{"type": "parcoords", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolargl": [{"type": "scatterpolargl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "bar": [{"error_x": {"color": "#2a3f5f"}, "error_y": {"color": "#2a3f5f"}, "marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "bar"}], "scattergeo": [{"type": "scattergeo", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolar": [{"type": "scatterpolar", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "histogram": [{"marker": {"pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "histogram"}], "scattergl": [{"type": "scattergl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatter3d": [{"type": "scatter3d", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattermap": [{"type": "scattermap", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattermapbox": [{"type": "scattermapbox", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterternary": [{"type": "scatterternary", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattercarpet": [{"type": "scattercarpet", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "carpet": [{"aaxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "baxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "type": "carpet"}], "table": [{"cells": {"fill": {"color": "#EBF0F8"}, "line": {"color": "white"}}, "header": {"fill": {"color": "#C8D4E3"}, "line": {"color": "white"}}, "type": "table"}], "barpolar": [{"marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "barpolar"}], "pie": [{"automargin": true, "type": "pie"}]}, "layout": {"autotypenumbers": "strict", "colorway": ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"], "font": {"color": "#2a3f5f"}, "hovermode": "closest", "hoverlabel": {"align": "left"}, "paper_bgcolor": "white", "plot_bgcolor": "#E5ECF6", "polar": {"bgcolor": "#E5ECF6", "angularaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "radialaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "ternary": {"bgcolor": "#E5ECF6", "aaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "baxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "caxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "coloraxis": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "colorscale": {"sequential": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "sequentialminus": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "diverging": [[0, "#8e0152"], [0.1, "#c51b7d"], [0.2, "#de77ae"], [0.3, "#f1b6da"], [0.4, "#fde0ef"], [0.5, "#f7f7f7"], [0.6, "#e6f5d0"], [0.7, "#b8e186"], [0.8, "#7fbc41"], [0.9, "#4d9221"], [1, "#276419"]]}, "xaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "yaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "scene": {"xaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "yaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "zaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}}, "shapedefaults": {"line": {"color": "#2a3f5f"}}, "annotationdefaults": {"arrowcolor": "#2a3f5f", "arrowhead": 0, "arrowwidth": 1}, "geo": {"bgcolor": "white", "landcolor": "#E5ECF6", "subunitcolor": "white", "showland": true, "showlakes": true, "lakecolor": "white"}, "title": {"x": 0.05}, "mapbox": {"style": "light"}}}, "title": {"text": "Supply Chain Flow Analysis"}, "font": {"family": "Arial, sans-serif", "size": 12, "color": "black"}, "margin": {"l": 25, "r": 25, "t": 100, "b": 25}, "xaxis": {"showgrid": false, "zeroline": false}, "yaxis": {"showgrid": false, "zeroline": false}, "autosize": true, "annotations": [{"font": {"color": "black", "family": "Arial, sans-serif", "size": 14}, "showarrow": false, "text": "Trader", "x": 0.02, "xref": "paper", "y": 1.05, "yref": "paper"}, {"font": {"color": "black", "family": "Arial, sans-serif", "size": 14}, "showarrow": false, "text": "Collection Point", "x": 0.2, "xref": "paper", "y": 1.05, "yref": "paper"}, {"font": {"color": "black", "family": "Arial, sans-serif", "size": 14}, "showarrow": false, "text": "Cargo Hub", "x": 0.46, "xref": "paper", "y": 1.05, "yref": "paper"}, {"font": {"color": "black", "family": "Arial, sans-serif", "size": 14}, "showarrow": false, "text": "WareHouse", "x": 0.68, "xref": "paper", "y": 1.05, "yref": "paper"}, {"font": {"color": "black", "family": "Arial, sans-serif", "size": 14}, "showarrow": false, "text": "Distribution Center", "x": 0.9, "xref": "paper", "y": 1.05, "yref": "paper"}, {"font": {"color": "black", "family": "Arial, sans-serif", "size": 14}, "showarrow": false, "text": "Store", "x": 0.98, "xref": "paper", "y": 1.05, "yref": "paper"}], "plot_bgcolor": "rgba(0,0,0,0)", "paper_bgcolor": "rgba(0,0,0,0)"}};
+        const tableData = [["Vendor2", 3608, 410, 3, "c1", 2616, 371, 2, 1, 2373, 669, 3, 1, 2863, 471, 3, 3, 1685, 304, 2, 1, 1567], ["Vendor2", 2610, 327, 2, "c5", 2126, 148, 1, 1, 940, 343, 2, 1, 1631, 328, 2, 2, 513, 93, 1, 7, 4621], ["Vendor2", 3737, 832, 4, "c2", 4903, 617, 3, 3, 3752, 351, 2, 4, 1315, 225, 2, 4, 4302, 683, 4, 1, 4131], ["Vendor4", 2049, 410, 2, "c2", 2185, 502, 3, 1, 2985, 292, 2, 4, 2671, 401, 3, 2, 1828, 349, 2, 4, 1872], ["Vendor2", 2968, 654, 3, "c2", 3867, 55, 1, 4, 253, 383, 2, 4, 552, 135, 1, 4, 1178, 170, 1, 3, 723], ["Vendor2", 3309, 599, 3, "c2", 3757, 129, 1, 1, 1012, 371, 2, 1, 4211, 646, 4, 4, 584, 50, 1, 3, 4189], ["Vendor2", 3070, 754, 4, "c2", 4629, 98, 1, 2, 300, 189, 1, 1, 932, 165, 1, 3, 2400, 433, 2, 8, 3753], ["Vendor2", 4322, 99, 1, "c1", 715, 404, 2, 2, 2129, 408, 2, 2, 1814, 331, 2, 2, 1091, 148, 1, 7, 5143], ["Vendor3", 2920, 799, 4, "c4", 4861, 289, 2, 4, 1620, 146, 1, 2, 3105, 457, 3, 2, 343, 76, 1, 6, 4702], ["Vendor1", 3233, 459, 3, "c1", 2624, 592, 3, 2, 3369, 72, 1, 1, 3180, 561, 3, 3, 2274, 392, 2, 4, 3128], ["Vendor3", 2631, 88, 1, "c4", 461, 684, 3, 1, 3744, 404, 2, 1, 4711, 824, 4, 4, 2117, 392, 2, 2, 2947], ["Vendor2", 4571, 884, 4, "c2", 5169, 93, 1, 3, 581, 272, 2, 1, 2963, 478, 3, 2, 2288, 384, 2, 6, 581], ["Vendor2", 4634, 133, 1, "c1", 1048, 89, 1, 4, 419, 50, 1, 3, 4913, 825, 4, 2, 4962, 783, 4, 3, 468], ["Vendor3", 1385, 621, 3, "c5", 3964, 153, 1, 3, 901, 738, 4, 1, 3184, 499, 3, 2, 504, 50, 1, 4, 2476], ["Vendor2", 1992, 644, 3, "c2", 3606, 671, 4, 3, 4245, 527, 3, 4, 5052, 805, 4, 3, 718, 96, 1, 4, 1056], ["Vendor4", 4659, 827, 4, "c3", 4817, 50, 1, 1, 383, 576, 3, 4, 551, 60, 1, 3, 4289, 719, 4, 5, 4810], ["Vendor2", 3966, 399, 2, "c2", 2397, 322, 2, 3, 2187, 141, 1, 3, 3876, 689, 3, 3, 1582, 213, 2, 4, 4499], ["Vendor4", 4549, 678, 3, "c1", 4074, 50, 1, 3, 391, 686, 3, 4, 402, 98, 1, 3, 1124, 166, 1, 4, 462], ["Vendor1", 3507, 51, 1, "c1", 239, 438, 3, 3, 2628, 476, 2, 1, 3364, 525, 3, 1, 2283, 413, 2, 4, 3622], ["Vendor1", 2146, 637, 3, "c1", 4127, 751, 4, 4, 4272, 367, 2, 4, 639, 55, 1, 1, 1128, 233, 1, 5, 2039], ["Vendor3", 2597, 340, 2, "c2", 2270, 704, 3, 4, 3969, 219, 2, 2, 4121, 686, 3, 2, 2315, 422, 2, 5, 3484], ["Vendor3", 2851, 615, 3, "c4", 3398, 326, 2, 4, 1762, 233, 2, 4, 268, 50, 1, 4, 2930, 515, 3, 1, 3942], ["Vendor2", 4064, 137, 1, "c3", 890, 375, 2, 4, 2430, 851, 4, 2, 2907, 476, 3, 2, 1595, 255, 2, 4, 1097], ["Vendor2", 1580, 311, 2, "c5", 1705, 234, 2, 4, 1206, 145, 1, 3, 2306, 423, 2, 2, 2260, 379, 2, 1, 1503], ["Vendor4", 3366, 519, 3, "c1", 3283, 698, 4, 3, 4493, 515, 3, 1, 2827, 425, 3, 1, 851, 156, 1, 7, 3868], ["Vendor4", 2158, 673, 3, "c2", 4166, 50, 1, 2, 529, 246, 2, 2, 2120, 323, 2, 2, 2891, 523, 3, 4, 1644], ["Vendor1", 3833, 771, 4, "c2", 4605, 270, 2, 2, 1907, 592, 3, 4, 849, 114, 1, 2, 663, 82, 1, 6, 1212], ["Vendor1", 3182, 95, 1, "c1", 349, 254, 2, 2, 1764, 253, 2, 2, 4740, 835, 4, 1, 1286, 187, 2, 1, 2490], ["Vendor3", 1832, 478, 3, "c2", 2823, 751, 4, 3, 4688, 164, 1, 1, 3289, 606, 3, 2, 3087, 466, 3, 3, 1740], ["Vendor2", 1144, 656, 3, "c4", 3769, 672, 4, 3, 4213, 576, 3, 3, 2525, 368, 2, 1, 2347, 364, 2, 2, 2341], ["Vendor1", 3619, 165, 1, "c3", 1173, 116, 1, 1, 900, 394, 2, 3, 1212, 173, 2, 1, 4590, 754, 4, 5, 1908], ["Vendor4", 1867, 608, 3, "c1", 3596, 739, 4, 4, 4361, 264, 2, 2, 5187, 915, 4, 2, 1833, 334, 2, 2, 3736], ["Vendor1", 2954, 489, 3, "c2", 2904, 50, 1, 2, 390, 174, 2, 1, 394, 69, 1, 4, 5151, 834, 4, 5, 2015], ["Vendor2", 2574, 702, 4, "c1", 4380, 693, 4, 2, 4321, 692, 3, 3, 5028, 791, 4, 4, 2836, 430, 3, 8, 2205], ["Vendor3", 1344, 493, 3, "c4", 2866, 196, 1, 4, 904, 364, 2, 4, 4535, 736, 4, 4, 4680, 810, 4, 4, 1691], ["Vendor1", 3690, 325, 2, "c5", 2219, 139, 1, 1, 1060, 795, 4, 3, 1655, 281, 2, 3, 2220, 412, 2, 6, 220], ["Vendor1", 2481, 541, 3, "c2", 2993, 94, 1, 3, 231, 681, 4, 3, 2161, 410, 2, 3, 1531, 264, 2, 4, 4079], ["Vendor4", 1703, 571, 3, "c4", 3584, 555, 3, 2, 3216, 664, 3, 2, 782, 184, 1, 2, 2229, 340, 2, 2, 516], ["Vendor4", 4609, 678, 4, "c4", 4313, 401, 2, 2, 2075, 138, 1, 4, 2892, 479, 3, 2, 4451, 759, 4, 1, 4076], ["Vendor2", 2333, 291, 2, "c4", 1544, 386, 2, 2, 2042, 594, 3, 1, 388, 106, 1, 3, 2376, 373, 2, 2, 1172], ["Vendor2", 1435, 781, 4, "c3", 4869, 847, 4, 1, 5007, 390, 2, 4, 3617, 658, 3, 3, 4334, 758, 4, 5, 5014], ["Vendor4", 3747, 140, 1, "c2", 549, 697, 3, 2, 4026, 396, 2, 3, 5161, 802, 4, 2, 4940, 780, 4, 3, 2280], ["Vendor4", 4639, 246, 2, "c3", 1662, 555, 3, 1, 3681, 566, 3, 2, 1045, 210, 1, 1, 4047, 698, 3, 1, 1458], ["Vendor1", 3802, 751, 4, "c2", 4210, 805, 4, 4, 5186, 561, 3, 2, 2467, 436, 2, 4, 2977, 450, 3, 2, 2651], ["Vendor4", 4400, 149, 1, "c5", 817, 423, 2, 2, 2391, 746, 4, 3, 5035, 877, 4, 3, 609, 113, 1, 6, 3109], ["Vendor2", 4667, 585, 3, "c3", 3734, 646, 3, 1, 3539, 372, 2, 1, 1091, 222, 1, 1, 1852, 317, 2, 8, 3402], ["Vendor1", 3065, 802, 4, "c2", 4864, 342, 2, 2, 2338, 808, 4, 3, 1327, 197, 2, 2, 1201, 204, 2, 5, 2906], ["Vendor3", 4252, 592, 3, "c1", 3370, 398, 2, 2, 2156, 159, 1, 2, 2029, 396, 2, 2, 3793, 608, 3, 4, 1679], ["Vendor4", 3189, 822, 4, "c5", 4982, 731, 4, 4, 4714, 804, 4, 4, 965, 146, 1, 4, 2493, 392, 2, 2, 2014], ["Vendor2", 2973, 605, 3, "c2", 3431, 669, 3, 1, 3931, 891, 4, 1, 2674, 485, 3, 3, 1244, 211, 2, 6, 3320]];
+        const analytics = {"kpis": {"end_to_end_los": 2.476923076923077, "stage_throughput": {"Trader\u2192Collection Point": 25236.0, "Collection Point\u2192Cargo Hub": 20322.0, "Cargo Hub\u2192WareHouse": 21708.0, "WareHouse\u2192Distribution Center": 21457.0, "Distribution Center\u2192Store": 19337.0}, "vendor_performance": {"Vendor2": 2.4458333333333333, "Vendor4": 2.5904761904761897, "Vendor3": 2.4111111111111114, "Vendor1": 2.4466666666666668}, "efficiency_score": 61.80469442574636, "total_supply_chain_health": 61.80469442574636}, "bottlenecks": {"top_bottlenecks": [{"stage": "Collection Point\u2192Cargo Hub", "from": "c4", "to": "3", "total_flow": 672.0, "avg_los": 4.0, "bottleneck_score": 94.99534537330106}, {"stage": "WareHouse\u2192Distribution Center", "from": "3", "to": "4", "total_flow": 791.0, "avg_los": 4.0, "bottleneck_score": 94.10910444982312}, {"stage": "Distribution Center\u2192Store", "from": "4", "to": "4", "total_flow": 810.0, "avg_los": 4.0, "bottleneck_score": 93.96760379817539}, {"stage": "Distribution Center\u2192Store", "from": "4", "to": "5", "total_flow": 834.0, "avg_los": 4.0, "bottleneck_score": 93.78886613293614}, {"stage": "Distribution Center\u2192Store", "from": "3", "to": "5", "total_flow": 1477.0, "avg_los": 4.0, "bottleneck_score": 89.00018618506795}, {"stage": "Distribution Center\u2192Store", "from": "4", "to": "1", "total_flow": 1198.0, "avg_los": 3.5, "bottleneck_score": 83.57801154347422}, {"stage": "Trader\u2192Collection Point", "from": "Vendor4", "to": "c4", "total_flow": 1249.0, "avg_los": 3.5, "bottleneck_score": 83.19819400484081}, {"stage": "Distribution Center\u2192Store", "from": "4", "to": "8", "total_flow": 430.0, "avg_los": 3.0, "bottleneck_score": 81.79761683113014}, {"stage": "Cargo Hub\u2192WareHouse", "from": "1", "to": "2", "total_flow": 566.0, "avg_los": 3.0, "bottleneck_score": 80.78477006144107}, {"stage": "Trader\u2192Collection Point", "from": "Vendor3", "to": "c1", "total_flow": 592.0, "avg_los": 3.0, "bottleneck_score": 80.59113759076521}], "highest_los_link": {"stage": "Collection Point\u2192Cargo Hub", "from": "c4", "to": "3", "total_flow": 672.0, "avg_los": 4.0, "bottleneck_score": 94.99534537330106}, "lowest_flow_link": {"stage": "WareHouse\u2192Distribution Center", "from": "4", "to": "1", "total_flow": 55.0, "avg_los": 1.0, "bottleneck_score": 54.590392850493394}, "highest_capacity_mismatch": {"node": "Vendor2", "inflow": 0.0, "outflow": 9803.0, "mismatch": 9803.0}, "most_repeated_vendor_store_delay": {"vendor": "Vendor2", "store": 5, "avg_los": 3.4, "occurrences": 5}, "max_flow": 18360.0, "critical_edges": [{"from": "3", "to": "1", "stage": "Distribution Center\u2192Store", "avg_los": 2.25, "total_flow": 3010.0}, {"from": "2", "to": "7", "stage": "Distribution Center\u2192Store", "avg_los": 1.0, "total_flow": 241.0}, {"from": "4", "to": "4", "stage": "WareHouse\u2192Distribution Center", "avg_los": 2.272727272727273, "total_flow": 4253.0}, {"from": "2", "to": "4", "stage": "Distribution Center\u2192Store", "avg_los": 2.125, "total_flow": 2951.0}, {"from": "1", "to": "4", "stage": "Cargo Hub\u2192WareHouse", "avg_los": 2.5714285714285716, "total_flow": 3210.0}, {"from": "3", "to": "8", "stage": "Distribution Center\u2192Store", "avg_los": 2.0, "total_flow": 433.0}, {"from": "2", "to": "6", "stage": "Distribution Center\u2192Store", "avg_los": 1.3333333333333333, "total_flow": 542.0}, {"from": "3", "to": "4", "stage": "Cargo Hub\u2192WareHouse", "avg_los": 2.2222222222222223, "total_flow": 3486.0}, {"from": "2", "to": "3", "stage": "Distribution Center\u2192Store", "avg_los": 3.4285714285714284, "total_flow": 4671.0}, {"from": "3", "to": "5", "stage": "Distribution Center\u2192Store", "avg_los": 4.0, "total_flow": 1477.0}, {"from": "1", "to": "1", "stage": "Cargo Hub\u2192WareHouse", "avg_los": 2.4545454545454546, "total_flow": 5107.0}, {"from": "4", "to": "1", "stage": "Distribution Center\u2192Store", "avg_los": 2.6666666666666665, "total_flow": 1253.0}, {"from": "2", "to": "5", "stage": "Distribution Center\u2192Store", "avg_los": 2.0, "total_flow": 626.0}, {"from": "2", "to": "1", "stage": "Cargo Hub\u2192WareHouse", "avg_los": 2.25, "total_flow": 3212.0}, {"from": "2", "to": "1", "stage": "Cargo Hub\u2192WareHouse", "avg_los": 2.25, "total_flow": 3212.0}, {"from": "3", "to": "1", "stage": "Distribution Center\u2192Store", "avg_los": 2.25, "total_flow": 3010.0}, {"from": "2", "to": "2", "stage": "Cargo Hub\u2192WareHouse", "avg_los": 2.2666666666666666, "total_flow": 6172.0}, {"from": "3", "to": "4", "stage": "Cargo Hub\u2192WareHouse", "avg_los": 2.2222222222222223, "total_flow": 3486.0}, {"from": "3", "to": "6", "stage": "Distribution Center\u2192Store", "avg_los": 1.6666666666666667, "total_flow": 736.0}, {"from": "3", "to": "2", "stage": "WareHouse\u2192Distribution Center", "avg_los": 2.8, "total_flow": 2620.0}, {"from": "2", "to": "4", "stage": "Distribution Center\u2192Store", "avg_los": 2.125, "total_flow": 2951.0}], "alternate_paths": [{"stage": "Distribution Center\u2192Store", "current_from": "3", "current_to": "1", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 2.25, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "2", "current_to": "7", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 1.0, "alternate_avg_los": 1.0}, {"stage": "WareHouse\u2192Distribution Center", "current_from": "4", "current_to": "4", "alternate_from": "4", "alternate_to": "1", "current_avg_los": 2.272727272727273, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "2", "current_to": "4", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 2.125, "alternate_avg_los": 1.0}, {"stage": "Cargo Hub\u2192WareHouse", "current_from": "1", "current_to": "4", "alternate_from": "4", "alternate_to": "3", "current_avg_los": 2.5714285714285716, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "3", "current_to": "8", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 2.0, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "2", "current_to": "6", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 1.3333333333333333, "alternate_avg_los": 1.0}, {"stage": "Cargo Hub\u2192WareHouse", "current_from": "3", "current_to": "4", "alternate_from": "4", "alternate_to": "3", "current_avg_los": 2.2222222222222223, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "2", "current_to": "3", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 3.4285714285714284, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "3", "current_to": "5", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 4.0, "alternate_avg_los": 1.0}, {"stage": "Cargo Hub\u2192WareHouse", "current_from": "1", "current_to": "1", "alternate_from": "4", "alternate_to": "3", "current_avg_los": 2.4545454545454546, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "4", "current_to": "1", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 2.6666666666666665, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "2", "current_to": "5", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 2.0, "alternate_avg_los": 1.0}, {"stage": "Cargo Hub\u2192WareHouse", "current_from": "2", "current_to": "1", "alternate_from": "4", "alternate_to": "3", "current_avg_los": 2.25, "alternate_avg_los": 1.0}, {"stage": "Cargo Hub\u2192WareHouse", "current_from": "2", "current_to": "1", "alternate_from": "4", "alternate_to": "3", "current_avg_los": 2.25, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "3", "current_to": "1", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 2.25, "alternate_avg_los": 1.0}, {"stage": "Cargo Hub\u2192WareHouse", "current_from": "2", "current_to": "2", "alternate_from": "4", "alternate_to": "3", "current_avg_los": 2.2666666666666666, "alternate_avg_los": 1.0}, {"stage": "Cargo Hub\u2192WareHouse", "current_from": "3", "current_to": "4", "alternate_from": "4", "alternate_to": "3", "current_avg_los": 2.2222222222222223, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "3", "current_to": "6", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 1.6666666666666667, "alternate_avg_los": 1.0}, {"stage": "WareHouse\u2192Distribution Center", "current_from": "3", "current_to": "2", "alternate_from": "4", "alternate_to": "1", "current_avg_los": 2.8, "alternate_avg_los": 1.0}, {"stage": "Distribution Center\u2192Store", "current_from": "2", "current_to": "4", "alternate_from": "1", "alternate_to": "7", "current_avg_los": 2.125, "alternate_avg_los": 1.0}]}, "predictive": {"expected_los_30_days": 2.25532, "expected_congestion": "High", "vendor_with_future_risk": "Vendor2", "coefficients": {"a": 0.0005, "b": 0.8, "c": 0.1}}};
+        
+        // Helper to size the chart to current viewport/container
+        function sizeSankeyLayout(layout) {
+            const container = document.getElementById('sankey-chart');
+            const rect = container.getBoundingClientRect();
+            const viewportH = window.innerHeight || 700;
+            const targetHeight = Math.min(Math.max(viewportH * 0.6, 320), 700);
+            layout.width = rect.width;
+            layout.height = targetHeight;
+        }
+
+        // Create the plot with responsive layout
+        sizeSankeyLayout(sankeyData.layout);
+        Plotly.newPlot('sankey-chart', sankeyData.data, sankeyData.layout, {
+            responsive: true,
+            displayModeBar: false
+        });
+
+        // Ensure the chart is fully visible and resizes with window
+        function relayoutSankey() {
+            const newLayout = Object.assign({}, sankeyData.layout);
+            sizeSankeyLayout(newLayout);
+            Plotly.relayout('sankey-chart', {
+                width: newLayout.width,
+                height: newLayout.height
+            });
+        }
+
+        window.addEventListener('load', function() {
+            setTimeout(relayoutSankey, 400);
+        });
+        window.addEventListener('resize', function() {
+            relayoutSankey();
+        });
+        
+        // Populate the data table
+        const tableBody = document.getElementById('tableBody');
+        tableData.forEach(row => {
+            const tr = document.createElement('tr');
+            row.forEach(cell => {
+                const td = document.createElement('td');
+                td.textContent = cell;
+                tr.appendChild(td);
+            });
+            tableBody.appendChild(tr);
+        });
+
+        // Populate vendor filter
+        const vendorFilter = document.getElementById('vendorFilter');
+        const selectedVendorText = document.getElementById('selectedVendorText');
+        const vendorSet = new Set(tableData.map(r => r[0]));
+        vendorSet.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = v;
+            vendorFilter.appendChild(opt);
+        });
+
+        // KPIs
+        function formatNumber(x) {
+            return x.toLocaleString(undefined, { maximumFractionDigits: 1 });
+        }
+
+        const kpiEndToEndLos = document.getElementById('kpiEndToEndLos');
+        const kpiThroughput = document.getElementById('kpiThroughput');
+        const kpiThroughputDetail = document.getElementById('kpiThroughputDetail');
+        const kpiEfficiency = document.getElementById('kpiEfficiency');
+        const vendorPerformanceText = document.getElementById('vendorPerformanceText');
+        const healthScoreText = document.getElementById('healthScoreText');
+        const healthPill = document.getElementById('healthPill');
+
+        const kpis = analytics.kpis;
+        kpiEndToEndLos.textContent = kpis.end_to_end_los.toFixed(2);
+
+        const stageThroughput = kpis.stage_throughput;
+        const totalThroughput = Object.values(stageThroughput).reduce((a, b) => a + b, 0);
+        kpiThroughput.textContent = formatNumber(totalThroughput);
+        kpiThroughputDetail.textContent = Object.entries(stageThroughput)
+            .map(([stage, val]) => stage.split('→')[0] + ': ' + Math.round(val))
+            .join(' · ');
+
+        kpiEfficiency.textContent = kpis.efficiency_score.toFixed(1);
+        healthScoreText.textContent = kpis.total_supply_chain_health.toFixed(0);
+
+        // Health pill coloring
+        const health = kpis.total_supply_chain_health;
+        healthPill.classList.remove('pill-low', 'pill-medium', 'pill-high');
+        if (health >= 75) {
+            healthPill.classList.add('pill-low');
+        } else if (health >= 50) {
+            healthPill.classList.add('pill-medium');
+        } else {
+            healthPill.classList.add('pill-high');
+        }
+
+        // Vendor performance text
+        const vp = kpis.vendor_performance;
+        const vpParts = Object.entries(vp).map(([vendor, los]) => `${vendor}: ${los.toFixed(2)}d`);
+        vendorPerformanceText.textContent = vpParts.join(' · ');
+
+        // Bottleneck table
+        const bottleneckTableBody = document.querySelector('#bottleneckTable tbody');
+        const topBottlenecks = analytics.bottlenecks.top_bottlenecks || [];
+        topBottlenecks.forEach((b, idx) => {
+            const tr = document.createElement('tr');
+            if (idx === 0) {
+                tr.classList.add('bottleneck-row-strong');
+            }
+            tr.innerHTML = `
+                <td>${b.stage}</td>
+                <td>${b.from} → ${b.to}</td>
+                <td>${Math.round(b.total_flow)}</td>
+                <td>${b.avg_los.toFixed(2)}</td>
+                <td>${b.bottleneck_score.toFixed(1)}</td>
+            `;
+            bottleneckTableBody.appendChild(tr);
+        });
+
+        // Critical path + alternates
+        const crit = analytics.bottlenecks;
+        const criticalPathSummary = document.getElementById('criticalPathSummary');
+        if ((crit.critical_edges || []).length > 0) {
+            const edges = crit.critical_edges
+                .map(e => `${e.stage}: ${e.from} → ${e.to}`)
+                .join(' · ');
+            criticalPathSummary.textContent =
+                `Critical cut-set edges (Max-Flow / Min-Cut): ${edges}`;
+        } else {
+            criticalPathSummary.textContent = 'No critical cut-set edges identified.';
+        }
+
+        // Predictive info
+        const predictedLosText = document.getElementById('predictedLosText');
+        const predictedLosPill = document.getElementById('predictedLosPill');
+        const futureRiskVendor = document.getElementById('futureRiskVendor');
+        const alternateRouteList = document.getElementById('alternateRouteList');
+
+        const pred = analytics.predictive;
+        predictedLosText.textContent = `${pred.expected_los_30_days.toFixed(2)} days`;
+        predictedLosPill.textContent = pred.expected_congestion + ' congestion';
+        predictedLosPill.classList.remove('pill-low', 'pill-medium', 'pill-high');
+        if (pred.expected_congestion === 'Low') {
+            predictedLosPill.classList.add('pill-low');
+        } else if (pred.expected_congestion === 'Medium') {
+            predictedLosPill.classList.add('pill-medium');
+        } else {
+            predictedLosPill.classList.add('pill-high');
+        }
+        futureRiskVendor.textContent = pred.vendor_with_future_risk || '–';
+
+        (analytics.bottlenecks.alternate_paths || []).forEach(alt => {
+            const li = document.createElement('li');
+            li.textContent =
+                `${alt.stage}: reroute from ${alt.current_from}→${alt.current_to} ` +
+                `to ${alt.alternate_from}→${alt.alternate_to} ` +
+                `(LOS ${alt.current_avg_los.toFixed(2)} → ${alt.alternate_avg_los.toFixed(2)})`;
+            alternateRouteList.appendChild(li);
+        });
+
+        // Interactive filters: vendor, LOS, flow, bottlenecks
+        const linkValueSlider = document.getElementById('linkValueSlider');
+        const losSlider = document.getElementById('losSlider');
+        const linkValueDisplay = document.getElementById('linkValueDisplay');
+        const losValueDisplay = document.getElementById('losValueDisplay');
+        const bottleneckToggle = document.getElementById('bottleneckToggle');
+        const nodeSearch = document.getElementById('nodeSearch');
+        const highlightPathToggle = document.getElementById('highlightPathToggle');
+
+        const originalSankey = JSON.parse(JSON.stringify(sankeyData));
+
+        function applyFilters() {
+            const minFlow = parseFloat(linkValueSlider.value);
+            const minLos = parseFloat(losSlider.value);
+            const vendor = vendorFilter.value;
+            const showOnlyBottlenecks = bottleneckToggle.checked;
+            const rawSearch = nodeSearch.value.trim().toLowerCase();
+            const searchTerms = rawSearch
+                .split(',')
+                .map(t => t.trim())
+                .filter(t => t.length > 0);
+
+            linkValueDisplay.textContent = '>' + Math.round(minFlow);
+            losValueDisplay.textContent = '>' + minLos;
+            selectedVendorText.textContent = vendor === 'ALL' ? 'All' : vendor;
+
+            const dataCopy = JSON.parse(JSON.stringify(originalSankey));
+            const link = dataCopy.data[0].link;
+            const node = dataCopy.data[0].node;
+
+            const newSource = [];
+            const newTarget = [];
+            const newValue = [];
+            const newColor = [];
+            const newLabel = [];
+
+            // Parse vendor info from labels (we know trader labels start with "Vendor")
+            const traderIndices = [];
+            node.label.forEach((lbl, idx) => {
+                if (lbl && lbl.toString().toLowerCase().startsWith('vendor')) {
+                    traderIndices.push({ idx, vendor: lbl });
+                }
+            });
+
+            function linkBelongsToVendor(sourceIdx) {
+                if (vendor === 'ALL') return true;
+                const match = traderIndices.find(t => t.idx === sourceIdx);
+                return match ? (match.vendor === vendor) : true;
+            }
+
+            for (let i = 0; i < link.value.length; i++) {
+                const val = link.value[i];
+                const lbl = link.label[i] || '';
+                const losMatch = lbl.match(/LOS:\s*([0-9.]+)/);
+                const los = losMatch ? parseFloat(losMatch[1]) : 0;
+                const src = link.source[i];
+                const tgt = link.target[i];
+
+                if (val < minFlow) continue;
+                if (los < minLos) continue;
+                if (!linkBelongsToVendor(src)) continue;
+
+                // If there is a node search, keep only links touching any searched node
+                if (searchTerms.length > 0) {
+                    const fromLabel = node.label[src] ? node.label[src].toString().toLowerCase() : '';
+                    const toLabel = node.label[tgt] ? node.label[tgt].toString().toLowerCase() : '';
+                    const matchesSearch = searchTerms.some(term =>
+                        fromLabel.includes(term) || toLabel.includes(term)
+                    );
+                    if (!matchesSearch) continue;
+                }
+
+                // Bottleneck-only mode: keep only links present in top bottlenecks
+                if (showOnlyBottlenecks) {
+                    const fromLabel = node.label[src];
+                    const toLabel = node.label[tgt];
+                    const isBottleneck = topBottlenecks.some(b => b.from === fromLabel && b.to === toLabel);
+                    if (!isBottleneck) continue;
+                }
+
+                newSource.push(src);
+                newTarget.push(tgt);
+                newValue.push(val);
+                newColor.push(link.color[i]);
+                newLabel.push(link.label[i]);
+            }
+
+            link.source = newSource;
+            link.target = newTarget;
+            link.value = newValue;
+            link.color = newColor;
+            link.label = newLabel;
+
+            // Node highlight on search
+            const baseNodeColors = originalSankey.data[0].node.color;
+            const newNodeColors = baseNodeColors.slice();
+            if (searchTerms.length > 0) {
+                node.label.forEach((lbl, idx) => {
+                    const lower = lbl ? lbl.toString().toLowerCase() : '';
+                    const hit = searchTerms.some(term => lower.includes(term));
+                    if (hit) {
+                        newNodeColors[idx] = '#ffc107';
+                    }
+                });
+            }
+            node.color = newNodeColors;
+
+            Plotly.react('sankey-chart', dataCopy.data, dataCopy.layout, {
+                responsive: true,
+                displayModeBar: false
+            });
+        }
+
+        linkValueSlider.addEventListener('input', applyFilters);
+        losSlider.addEventListener('input', applyFilters);
+        bottleneckToggle.addEventListener('change', applyFilters);
+        vendorFilter.addEventListener('change', applyFilters);
+        nodeSearch.addEventListener('input', applyFilters);
+
+        // Optional: highlight critical path edges by thickening them
+        highlightPathToggle.addEventListener('change', function() {
+            const checked = highlightPathToggle.checked;
+            const dataCopy = JSON.parse(JSON.stringify(originalSankey));
+            const criticalEdges = analytics.bottlenecks.critical_edges || [];
+
+            if (checked && criticalEdges.length > 0) {
+                const link = dataCopy.data[0].link;
+                const node = dataCopy.data[0].node;
+                const widths = new Array(link.value.length).fill(8);
+
+                for (let i = 0; i < link.value.length; i++) {
+                    const fromLabel = node.label[link.source[i]];
+                    const toLabel = node.label[link.target[i]];
+                    const isCritical = criticalEdges.some(
+                        e => e.from === fromLabel && e.to === toLabel
+                    );
+                    if (isCritical) {
+                        widths[i] = 20;
+                    }
+                }
+                dataCopy.data[0].link.line = { color: 'rgba(0,0,0,0.5)', width: widths };
+            }
+
+            Plotly.react('sankey-chart', dataCopy.data, dataCopy.layout, {
+                responsive: true,
+                displayModeBar: false
+            });
+        });
+
+        // Initialize filters
+        applyFilters();
+    </script>
+</body>
+</html>
